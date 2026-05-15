@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login - Employee Management System</title>
+    <!-- Use CDN Bootstrap 5 for professional clean design -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center" style="height: 100vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-lg border-0 rounded-lg mt-5">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h3 class="mb-0">EMS Portal Access</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Alert for Login Error -->
+                        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                            Invalid Username or Password.
+                        </div>
+                        <!-- Alert for Successful Logout -->
+                        <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                            You have been securely logged out.
+                        </div>
+
+                        <!-- Login Form targeting Spring Security config -->
+                        <form th:action="@{/authenticateUser}" method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-muted">Username</label>
+                                <input type="text" id="username" name="username" class="form-control py-2" placeholder="Enter username" required autofocus />
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-muted">Password</label>
+                                <input type="password" id="password" name="password" class="form-control py-2" placeholder="Enter password" required />
+                            </div>
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Secure Login</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center py-3 bg-white border-0 text-muted">
+                        <small>Test Admin: <strong>admin</strong> | <strong>admin123</strong><br/>
+                        Test User: <strong>user</strong> | <strong>user123</strong></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

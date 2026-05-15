@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Employee - EMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary shadow-sm mb-5">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/">EMS System</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h4 class="text-primary"><i class="bi bi-person-plus-fill me-2"></i> Register New Employee</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="#" th:action="@{/saveEmployee}" th:object="${employee}" method="POST">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{firstName}" class="form-control" placeholder="John" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{lastName}" class="form-control" placeholder="Doe" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted fw-bold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" th:field="*{email}" class="form-control" placeholder="john.doe@cognizant.com" required>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Department</label>
+                                    <select th:field="*{department}" class="form-select">
+                                        <option value="Java Full Stack">Java Full Stack</option>
+                                        <option value="Cloud Infra">Cloud Infra</option>
+                                        <option value="Testing">Testing</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Finance">Finance</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Designation</label>
+                                    <input type="text" th:field="*{designation}" class="form-control" placeholder="e.g. PAT / PA" required>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between pt-3 border-top">
+                                <a th:href="@{/}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Cancel & Return
+                                </a>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check-circle me-1"></i> Save Employee
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

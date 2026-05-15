@@ -1,0 +1,8 @@
+{
+  "name": "Java Spring Boot EMS Generator",
+  "description": "A fully functional Java 17 Spring Boot Employee Management System with MySQL, Thymeleaf MVC, Security, and deployable via Render & Railway.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
