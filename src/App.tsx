@@ -3,46 +3,68 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Download, Github, Terminal, CheckCircle } from 'lucide-react';
+import { Database, Server, Shield, Code2, Terminal } from 'lucide-react';
 
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-gray-800">
-      <div className="max-w-2xl bg-white p-8 rounded-xl shadow-xl border border-gray-100">
-        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-8 h-8" />
+      <div className="max-w-3xl bg-white p-8 rounded-xl shadow-xl border border-gray-100 w-full">
+        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Code2 className="w-8 h-8" />
         </div>
         
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">Java Spring Boot Project Generated!</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">Employee Management System</h1>
         <p className="text-gray-600 mb-8 text-center text-lg">
-          Your complete <strong>Employee Management System</strong> (Java 17 + Spring Boot + MySQL + Thymeleaf + Security) has been created successfully.
+          A Full-Stack Java Application built for Enterprise Operations
         </p>
+        
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="font-bold mb-2 flex items-center text-gray-800">
+              <Server className="w-5 h-5 me-2 text-blue-600" /> Backend
+            </h3>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Java 17 & Spring Boot 3</li>
+              <li>• Spring Security (Role-based Auth)</li>
+              <li>• RESTful APIs</li>
+              <li>• Maven & JUnit/Mockito</li>
+            </ul>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="font-bold mb-2 flex items-center text-gray-800">
+              <Database className="w-5 h-5 me-2 text-green-600" /> Data & UI
+            </h3>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• MySQL & Spring Data JPA</li>
+              <li>• Hibernate ORM</li>
+              <li>• Thymeleaf Template Engine</li>
+              <li>• Bootstrap 5 Responsive UI</li>
+            </ul>
+          </div>
+        </div>
         
         <div className="bg-blue-50 border border-blue-100 text-blue-900 p-5 rounded-lg mb-6">
           <h3 className="font-bold mb-3 flex items-center text-blue-800">
-            <Download className="w-5 h-5 me-2" /> How to access your code:
+            <Shield className="w-5 h-5 me-2" /> Key Features
           </h3>
-          <ol className="list-decimal list-inside space-y-2 mb-4">
-            <li>Click the <strong>Settings</strong> gear icon (top right of the compiler editor)</li>
-            <li>Select <strong className="text-blue-700">Export as ZIP</strong></li>
-            <li>Extract the folder and open it in IntelliJ IDEA or VS Code!</li>
-          </ol>
+          <ul className="list-disc list-inside space-y-2 text-sm text-blue-800 mb-4 ml-2">
+            <li>Secure session management with BCrypt password hashing.</li>
+            <li>Admin & User role separation (RBAC) ensuring data protection.</li>
+            <li>Complete CRUD operations for managing enterprise employee records.</li>
+            <li>Fully responsive and accessible frontend interface.</li>
+            <li>Architected using the strict MVC design pattern.</li>
+          </ul>
         </div>
         
         <div className="bg-gray-800 text-gray-100 p-5 rounded-lg text-sm mb-6">
           <h4 className="font-bold mb-2 flex items-center text-gray-300">
-            <Terminal className="w-4 h-4 me-2" /> Local Setup Commands:
+            <Terminal className="w-4 h-4 me-2" /> Run from Source:
           </h4>
-          <pre className="bg-gray-900 p-3 rounded font-mono text-green-400 overflow-x-auto">
+          <pre className="bg-gray-900 p-3 rounded font-mono text-green-400 overflow-x-auto text-xs">
             $ cd java-backend/<br/>
             $ mvn clean install<br/>
             $ mvn spring-boot:run
           </pre>
-        </div>
-
-        <div className="text-sm text-gray-500 border-t pt-4 text-center">
-          <p>* Note: AI Studio's live preview window natively runs Node.js frontends.</p>
-          <p>Please download the exported code to run your Java environment natively.</p>
         </div>
       </div>
     </div>

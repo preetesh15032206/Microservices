@@ -7,7 +7,6 @@
 </head>
 <body class="bg-light">
 
-    <!-- Navbar -->
     <nav class="navbar navbar-dark bg-primary shadow-sm mb-5">
         <div class="container-fluid px-4">
             <a class="navbar-brand" href="/">EMS System</a>
@@ -41,19 +40,23 @@
                             </div>
                             
                             <div class="row mb-4">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label text-muted fw-bold">Department</label>
-                                    <select th:field="*{department}" class="form-select">
-                                        <option value="Java Full Stack">Java Full Stack</option>
-                                        <option value="Cloud Infra">Cloud Infra</option>
-                                        <option value="Testing">Testing</option>
-                                        <option value="HR">HR</option>
-                                        <option value="Finance">Finance</option>
+                                    <select th:field="*{department}" class="form-select" required>
+                                        <option value="">-- Select Department --</option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label text-muted fw-bold">Designation</label>
                                     <input type="text" th:field="*{designation}" class="form-control" placeholder="e.g. PAT / PA" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted fw-bold">Salary (USD)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" th:field="*{salary}" class="form-control" placeholder="65000" required>
+                                    </div>
                                 </div>
                             </div>
                             

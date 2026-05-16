@@ -4,6 +4,9 @@
     <title>Dashboard - Employee Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .inactive-row { opacity: 0.6; background-color: #f8f9fa; }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -12,11 +15,27 @@
         <div class="container-fluid px-4">
             <a class="navbar-brand fw-bold" href="/"><i class="bi bi-building me-2"></i>EMS Dashboard</a>
             
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Employees</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/departments">Departments</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/audit-logs">Audit Logs</a>
+                    </li>
+                </ul>
+            </div>
+            
             <div class="d-flex align-items-center text-white ms-auto">
                 <span class="me-3">Welcome, <strong sec:authentication="name">User</strong> 
                     <span class="badge bg-light text-primary ms-1" sec:authentication="principal.authorities[0]">Role</span>
                 </span>
-                
                 <form th:action="@{/logout}" method="post">
                     <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
                 </form>
@@ -24,64 +43,315 @@
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <div class="container bg-white p-4 rounded shadow-sm border border-light">
-        
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-6">
-                <h3 class="text-secondary"><i class="bi bi-people-fill me-2"></i> Employee Directory</h3>
+    <!-- KPI Cards -->
+    <div class="container mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-people-fill me-2"></i>Total Active</h6>
+                        <h3 class="fw-bold mb-0" th:text="${totalActive}">0</h3>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6 text-end">
-                <!-- Only Admin can see this button -->
-                <a sec:authorize="hasRole('ADMIN')" th:href="@{/showNewEmployeeForm}" class="btn btn-success">
-                    <i class="bi bi-person-plus-fill me-1"></i> Add Employee
-                </a>
+            <div class="col-md-3">
+                <div class="card bg-success text-white h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-currency-dollar me-2"></i>Average Salary</h6>
+                        <h3 class="fw-bold mb-0" th:text="${avgSalary != null ? '$' + #numbers.formatDecimal(avgSalary, 1, 'COMMA', 2, 'POINT') : '$0.00'}">$0.00</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-trophy-fill me-2"></i>Highest Paid</h6>
+                        <h5 class="fw-bold mb-0 text-truncate" th:text="${highestPaid != null ? highestPaid.firstName + ' ' + highestPaid.lastName : 'None'}">None</h5>
+                        <small th:if="${highestPaid != null}" th:text="${'$' + #numbers.formatDecimal(highestPaid.salary, 1, 'COMMA', 2, 'POINT')}"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-dark h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-person-badge-fill me-2"></i>Newest Hire</h6>
+                        <h5 class="fw-bold mb-0 text-truncate" th:text="${newestHire != null ? newestHire.firstName + ' ' + newestHire.lastName : 'None'}">None</h5>
+                        <small th:if="${newestHire != null}" th:text="${#temporals.format(newestHire.joinDate, 'MMM dd, yyyy')}"></small>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <hr>
+    <!-- Main Container -->
+    <div class="container bg-white p-4 rounded shadow-sm border border-light mb-5">
+        
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-2">
+                <h4 class="text-secondary mb-0"><i class="bi bi-person-lines-fill me-2"></i> Directory</h4>
+            </div>
+            <div class="col-md-10 text-end d-flex justify-content-end align-items-center">
+                <!-- Search & Filters -->
+                <form th:action="@{/page/1}" class="d-flex me-3">
+                    <input type="hidden" name="sortField" th:value="${sortField}">
+                    <input type="hidden" name="sortDir" th:value="${sortDir}">
+                    
+                    <select name="departmentId" class="form-select form-select-sm me-2" style="width: auto;">
+                        <option value="">All Depts</option>
+                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}" th:selected="${dept.id == departmentId}"></option>
+                    </select>
+
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <select name="status" class="form-select form-select-sm me-2" style="width: auto;">
+                            <option value="ALL" th:selected="${status == 'ALL'}">All Status</option>
+                            <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
+                            <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
+                        </select>
+                    </div>
+
+                    <input type="text" name="keyword" class="form-control form-control-sm me-2" placeholder="Search name..." th:value="${keyword}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
+                    <a th:href="@{/}" class="btn btn-outline-secondary btn-sm ms-1" title="Clear"><i class="bi bi-x-circle"></i></a>
+                </form>
+
+                <!-- Admin Action Buttons -->
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/export}" class="btn btn-dark btn-sm text-white me-2">
+                        <i class="bi bi-file-earmark-excel-fill me-1"></i> Export
+                    </a>
+                    <a th:href="@{/showNewEmployeeForm}" class="btn btn-success btn-sm">
+                        <i class="bi bi-person-plus-fill me-1"></i> Add Employee
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-hover table-bordered align-middle">
                 <thead class="table-light text-secondary">
                     <tr>
-                        <th width="20%">First Name</th>
-                        <th width="20%">Last Name</th>
-                        <th width="25%">Email Address</th>
-                        <th width="15%">Department</th>
-                        <th width="15%">Role/Designation</th>
-                        <th width="10%" class="text-center" sec:authorize="hasRole('ADMIN')">Actions</th>
+                        <th>
+                            <a class="text-decoration-none text-secondary" th:href="@{'/page/' + ${currentPage} + '?sortField=firstName&sortDir=' + ${reverseSortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&status=' + ${status} + ${departmentId != null ? '&departmentId=' + departmentId : ''}}">
+                                First Name <i class="bi bi-arrow-down-up float-end" style="font-size: 0.8rem; margin-top: 3px;"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="text-decoration-none text-secondary" th:href="@{'/page/' + ${currentPage} + '?sortField=lastName&sortDir=' + ${reverseSortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&status=' + ${status} + ${departmentId != null ? '&departmentId=' + departmentId : ''}}">
+                                Last Name <i class="bi bi-arrow-down-up float-end" style="font-size: 0.8rem; margin-top: 3px;"></i>
+                            </a>
+                        </th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th>Salary</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="employee : ${listEmployees}">
-                        <td th:text="${employee.firstName}" class="fw-semibold text-primary"></td>
+                    <tr th:each="employee : ${listEmployees}" th:classappend="${!employee.isActive} ? 'inactive-row' : ''">
+                        <td th:text="${employee.firstName}" class="fw-semibold"></td>
                         <td th:text="${employee.lastName}"></td>
                         <td th:text="${employee.email}"></td>
-                        <td><span class="badge bg-info text-dark" th:text="${employee.department}"></span></td>
+                        <td>
+                            <span class="badge bg-secondary text-light" th:text="${employee.department != null ? employee.department.name : 'N/A'}"></span>
+                        </td>
                         <td th:text="${employee.designation}"></td>
-                        <!-- Only Admin can execute modifications -->
-                        <td class="text-center align-middle" sec:authorize="hasRole('ADMIN')">
+                        <td class="text-success fw-bold" th:text="${employee.salary != null ? '$' + #numbers.formatDecimal(employee.salary, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
+                        <td class="text-center">
+                            <span class="badge" th:classappend="${employee.isActive} ? 'bg-success' : 'bg-danger'" th:text="${employee.isActive} ? 'Active' : 'Inactive'"></span>
+                        </td>
+                        <td class="text-center align-middle">
                             <div class="btn-group btn-group-sm">
-                                <a th:href="@{/showFormForUpdate/{id}(id=${employee.id})}" class="btn btn-outline-primary" title="Edit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <a th:href="@{/deleteEmployee/{id}(id=${employee.id})}" class="btn btn-outline-danger" title="Delete"
-                                   onclick="if(!confirm('Delete this employee record permanently?')) return false;">
-                                    <i class="bi bi-trash-fill"></i>
-                                </a>
+                                <button class="btn btn-outline-info" title="Quick View" th:onclick="'viewEmployee(' + ${employee.id} + ')'">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                                
+                                <div sec:authorize="hasRole('ADMIN')" class="btn-group btn-group-sm">
+                                    <a th:href="@{/showFormForUpdate/{id}(id=${employee.id})}" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    
+                                    <form th:action="@{/employees/{id}/toggle-status(id=${employee.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn" th:classappend="${employee.isActive} ? 'btn-outline-warning' : 'btn-outline-success'" 
+                                                th:title="${employee.isActive} ? 'Deactivate' : 'Reactivate'">
+                                            <i class="bi" th:classappend="${employee.isActive} ? 'bi-person-slash' : 'bi-person-check'"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <a th:href="@{/deleteEmployee/{id}(id=${employee.id})}" class="btn btn-outline-danger" title="Hard Delete"
+                                       onclick="if(!confirm('Delete this employee record permanently?')) return false;">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </div>
                             </div>
                         </td>
                     </tr>
-                    <!-- Empty State -->
                     <tr th:if="${#lists.isEmpty(listEmployees)}">
-                        <td colspan="6" class="text-center py-4 text-muted">
-                            <i class="bi bi-inbox fs-2 mb-2 d-block"></i> No employee records found in database.
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 mb-2 d-block"></i> No employee records found.
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination UI -->
+        <div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted small">
+                Showing Employee <span class="fw-bold" th:text="${(currentPage - 1) * 10 + 1}"></span> to 
+                <span class="fw-bold" th:text="${currentPage * 10 < totalItems ? currentPage * 10 : totalItems}"></span> 
+                of <span class="fw-bold" th:text="${totalItems}"></span> records
+            </div>
+            <div>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                         <a class="page-link" th:href="@{'/page/' + ${currentPage - 1} + '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&status=' + ${status} + ${departmentId != null ? '&departmentId=' + departmentId : ''}}">Prev</a>
+                    </li>
+                    <li class="page-item" th:each="i: ${#numbers.sequence(1, totalPages)}" th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{'/page/' + ${i} + '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&status=' + ${status} + ${departmentId != null ? '&departmentId=' + departmentId : ''}}">[[${i}]]</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                         <a class="page-link" th:href="@{'/page/' + ${currentPage + 1} + '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&status=' + ${status} + ${departmentId != null ? '&departmentId=' + departmentId : ''}}">Next</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
+
+    <!-- Quick View Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Employee Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <!-- Loading Spinner -->
+                    <div id="modalLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted">Loading details...</p>
+                    </div>
+
+                    <!-- Content -->
+                    <div id="modalContent" style="display: none;">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Full Name</small>
+                                        <h5 id="modalName" class="text-dark mb-0"></h5>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Email</small>
+                                        <div id="modalEmail" class="text-dark"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Department</small>
+                                        <div><span id="modalDept" class="badge bg-secondary"></span></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Designation</small>
+                                        <div id="modalRole" class="text-dark"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Salary</small>
+                                        <div id="modalSalary" class="text-success fw-bold"></div>
+                                    </div>
+                                    <div class="col-sm-3 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Status</small>
+                                        <div><span id="modalStatus" class="badge"></span></div>
+                                    </div>
+                                    <div class="col-sm-3 mb-3">
+                                        <small class="text-muted text-uppercase fw-bold">Join Date</small>
+                                        <div id="modalJoinDate" class="text-dark"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Recent Activity</h6>
+                        <div class="card border-0 shadow-sm">
+                            <ul class="list-group list-group-flush" id="modalAuditLogs">
+                                <!-- Logs injected here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Modal Fetch Script -->
+    <script>
+        const empModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+
+        function viewEmployee(id) {
+            document.getElementById('modalLoading').style.display = 'block';
+            document.getElementById('modalContent').style.display = 'none';
+            empModal.show();
+
+            fetch(`/api/employees/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    const emp = data.employee;
+                    const logs = data.auditLogs;
+
+                    // Populate Details
+                    document.getElementById('modalName').textContent = emp.firstName + ' ' + emp.lastName;
+                    document.getElementById('modalEmail').textContent = emp.email;
+                    document.getElementById('modalDept').textContent = emp.department ? emp.department.name : 'N/A';
+                    document.getElementById('modalRole').textContent = emp.designation;
+                    
+                    const salaryFormatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(emp.salary || 0);
+                    document.getElementById('modalSalary').textContent = salaryFormatted;
+                    
+                    const statusBadge = document.getElementById('modalStatus');
+                    statusBadge.textContent = emp.isActive ? 'Active' : 'Inactive';
+                    statusBadge.className = emp.isActive ? 'badge bg-success' : 'badge bg-danger';
+
+                    document.getElementById('modalJoinDate').textContent = emp.joinDate;
+
+                    // Populate Audit Logs
+                    const logContainer = document.getElementById('modalAuditLogs');
+                    logContainer.innerHTML = '';
+                    
+                    if (logs && logs.length > 0) {
+                        logs.forEach(log => {
+                            const date = new Date(log.timestamp).toLocaleString();
+                            let badgeClass = 'bg-primary';
+                            if(log.action === 'CREATED') badgeClass = 'bg-success';
+                            if(log.action === 'UPDATED') badgeClass = 'bg-info text-dark';
+                            if(log.action === 'DELETED') badgeClass = 'bg-danger';
+                            if(log.action === 'DEACTIVATED') badgeClass = 'bg-warning text-dark';
+                            
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item d-flex justify-content-between align-items-center py-3';
+                            li.innerHTML = `
+                                <div>
+                                    <span class="badge ${badgeClass} me-2">${log.action}</span>
+                                    <small class="text-muted">by ${log.performedBy}</small>
+                                </div>
+                                <small class="text-muted">${date}</small>
+                            `;
+                            logContainer.appendChild(li);
+                        });
+                    } else {
+                        logContainer.innerHTML = '<li class="list-group-item text-center text-muted py-4">No recent activity</li>';
+                    }
+
+                    document.getElementById('modalLoading').style.display = 'none';
+                    document.getElementById('modalContent').style.display = 'block';
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('modalLoading').innerHTML = '<p class="text-danger mt-3"><i class="bi bi-exclamation-triangle me-2"></i>Error loading data.</p>';
+                });
+        }
+    </script>
 </body>
 </html>

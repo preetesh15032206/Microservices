@@ -11,30 +11,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Configure Request Authorization
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/css/**", "/js/**", "/api/**").permitAll() // Open APIs and Login
-                // Enforce ADMIN role on critical operations
-                .requestMatchers("/showNewEmployeeForm", "/saveEmployee", "/showFormForUpdate/**", "/deleteEmployee/**").hasRole("ADMIN")
-                // General authenticated access for any other endpoints (like Dashboard)
+                .requestMatchers("/login", "/css/**", "/js/**", "/api/**").permitAll()
+                .requestMatchers("/showNewEmployeeForm", "/saveEmployee", "/showFormForUpdate/**", 
+                                 "/deleteEmployee/**", "/employees/*/toggle-status", "/export",
+                                 "/departments/**", "/analytics", "/audit-logs").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            // Configure Form Based Login
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/authenticateUser")
-                .defaultSuccessUrl("/", true) // Force redirect to dashboard on success
+                .defaultSuccessUrl("/", true)
                 .permitAll()
             )
-            // Configure Logout
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             );
 
-        // Required for Postman/API JSON testing locally otherwise POST /api/employees will be blocked internally
         http.csrf(csrf -> csrf.disable()); 
 
         return http.build();
     }
 }
+
