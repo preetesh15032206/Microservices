@@ -90,7 +90,7 @@ public class EmployeeController {
     }
 
     @PostMapping("/saveEmployee")
-    public String saveEmployee(@ModelAttribute("employee") Employee employee, @RequestParam(value = "deptId", required = false) Long deptId) {
+    public String saveEmployee(@ModelAttribute("employee") Employee employee, @RequestParam(value = "deptId", required = false) Long deptId, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttrs) {
         if (deptId != null && deptId > 0) {
             employee.setDepartment(departmentService.getDepartmentById(deptId));
         } else {
@@ -106,7 +106,15 @@ public class EmployeeController {
             employee.setJoinDate(java.time.LocalDate.now());
         }
 
-        employeeService.saveEmployee(employee);
+        try {
+            employeeService.saveEmployee(employee);
+            redirectAttrs.addFlashAttribute("successMessage", "Employee saved successfully!");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("errorMessage", "Error saving employee: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
+            // Redirect back to the correct form based on whether it's an update or create
+            return employee.getId() != null ? "redirect:/showFormForUpdate/" + employee.getId() : "redirect:/showNewEmployeeForm";
+        }
+
         return "redirect:/";
     }
 
