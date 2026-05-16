@@ -42,7 +42,7 @@
                             <div class="row mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label text-muted fw-bold">Department</label>
-                                    <select th:field="*{department}" class="form-select" required>
+                                    <select name="deptId" class="form-select" required>
                                         <option value="">-- Select Department --</option>
                                         <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
                                     </select>

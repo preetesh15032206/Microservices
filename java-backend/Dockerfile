@@ -11,4 +11,4 @@ COPY --from=build /app/target/ems-0.0.1-SNAPSHOT.jar ems.jar
 # Expose default port
 EXPOSE 8080
 # Run the application
-ENTRYPOINT ["java","-jar","ems.jar"]
+ENTRYPOINT ["sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -jar ems.jar"]

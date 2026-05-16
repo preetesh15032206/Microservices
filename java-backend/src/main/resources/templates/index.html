@@ -67,7 +67,7 @@
                     <div class="card-body">
                         <h6 class="card-title"><i class="bi bi-trophy-fill me-2"></i>Highest Paid</h6>
                         <h5 class="fw-bold mb-0 text-truncate" th:text="${highestPaid != null ? highestPaid.firstName + ' ' + highestPaid.lastName : 'None'}">None</h5>
-                        <small th:if="${highestPaid != null}" th:text="${'$' + #numbers.formatDecimal(highestPaid.salary, 1, 'COMMA', 2, 'POINT')}"></small>
+                        <small th:if="${highestPaid != null and highestPaid.salary != null}" th:text="${'$' + #numbers.formatDecimal(highestPaid.salary, 1, 'COMMA', 2, 'POINT')}"></small>
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                     <div class="card-body">
                         <h6 class="card-title"><i class="bi bi-person-badge-fill me-2"></i>Newest Hire</h6>
                         <h5 class="fw-bold mb-0 text-truncate" th:text="${newestHire != null ? newestHire.firstName + ' ' + newestHire.lastName : 'None'}">None</h5>
-                        <small th:if="${newestHire != null}" th:text="${#temporals.format(newestHire.joinDate, 'MMM dd, yyyy')}"></small>
+                        <small th:if="${newestHire != null and newestHire.joinDate != null}" th:text="${#temporals.format(newestHire.joinDate, 'MMM dd, yyyy')}"></small>
                     </div>
                 </div>
             </div>
@@ -149,17 +149,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="employee : ${listEmployees}" th:classappend="${!employee.isActive} ? 'inactive-row' : ''">
+                    <tr th:each="employee : ${listEmployees}" th:classappend="${employee.isActive != null and !employee.isActive} ? 'inactive-row' : ''">
                         <td th:text="${employee.firstName}" class="fw-semibold"></td>
                         <td th:text="${employee.lastName}"></td>
                         <td th:text="${employee.email}"></td>
                         <td>
-                            <span class="badge bg-secondary text-light" th:text="${employee.department != null ? employee.department.name : 'N/A'}"></span>
+                            <span class="badge bg-secondary text-light" th:text="${employee.department?.name ?: 'N/A'}"></span>
                         </td>
                         <td th:text="${employee.designation}"></td>
                         <td class="text-success fw-bold" th:text="${employee.salary != null ? '$' + #numbers.formatDecimal(employee.salary, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
                         <td class="text-center">
-                            <span class="badge" th:classappend="${employee.isActive} ? 'bg-success' : 'bg-danger'" th:text="${employee.isActive} ? 'Active' : 'Inactive'"></span>
+                            <span class="badge" th:classappend="${employee.isActive == null or employee.isActive} ? 'bg-success' : 'bg-danger'" th:text="${employee.isActive == null or employee.isActive} ? 'Active' : 'Inactive'"></span>
                         </td>
                         <td class="text-center align-middle">
                             <div class="btn-group btn-group-sm">
@@ -173,9 +173,9 @@
                                     </a>
                                     
                                     <form th:action="@{/employees/{id}/toggle-status(id=${employee.id})}" method="post" class="d-inline">
-                                        <button type="submit" class="btn" th:classappend="${employee.isActive} ? 'btn-outline-warning' : 'btn-outline-success'" 
-                                                th:title="${employee.isActive} ? 'Deactivate' : 'Reactivate'">
-                                            <i class="bi" th:classappend="${employee.isActive} ? 'bi-person-slash' : 'bi-person-check'"></i>
+                                        <button type="submit" class="btn" th:classappend="${employee.isActive == null or employee.isActive} ? 'btn-outline-warning' : 'btn-outline-success'" 
+                                                th:title="${employee.isActive == null or employee.isActive} ? 'Deactivate' : 'Reactivate'">
+                                            <i class="bi" th:classappend="${employee.isActive == null or employee.isActive} ? 'bi-person-slash' : 'bi-person-check'"></i>
                                         </button>
                                     </form>
                                     

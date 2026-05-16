@@ -90,7 +90,22 @@ public class EmployeeController {
     }
 
     @PostMapping("/saveEmployee")
-    public String saveEmployee(@ModelAttribute("employee") Employee employee) {
+    public String saveEmployee(@ModelAttribute("employee") Employee employee, @RequestParam(value = "deptId", required = false) Long deptId) {
+        if (deptId != null && deptId > 0) {
+            employee.setDepartment(departmentService.getDepartmentById(deptId));
+        } else {
+            employee.setDepartment(null);
+        }
+
+        if (employee.getId() != null) {
+            Employee existing = employeeService.getEmployeeById(employee.getId());
+            employee.setIsActive(existing.getIsActive());
+            employee.setJoinDate(existing.getJoinDate());
+        } else {
+            employee.setIsActive(true);
+            employee.setJoinDate(java.time.LocalDate.now());
+        }
+
         employeeService.saveEmployee(employee);
         return "redirect:/";
     }
