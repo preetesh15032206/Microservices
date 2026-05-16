@@ -30,10 +30,10 @@ public class Employee {
     @Column(name = "salary")
     private Double salary;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
-    @Column(name = "join_date", nullable = false)
+    @Column(name = "join_date")
     private LocalDate joinDate = LocalDate.now();
 
     public Employee() {}
